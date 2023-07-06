@@ -3,27 +3,30 @@ import AssignmentCreate from "./AssignmentCreate.js";
 
 export default {
   template: `
-<section class="space-y-6">
-    <AssignmentList title="In Progress" :assignments="filters.inProgress" />
-    <AssignmentList title="Completed" :assignments="filters.completed" />
+<section class="flex gap-4">
+    <AssignmentList title="In Progress" :assignments="filters.inProgress">
+      <AssignmentCreate :assignments="assignments" v-on:submitForm="add" />
+    </AssignmentList>
+    <div v-if="showCompleted">
+      <AssignmentList title="Completed" :assignments="filters.completed" canToggle @toggle="showCompleted = !showCompleted" />
+    </div>
+    
 
-  <AssignmentCreate :assignments="assignments" v-on:submitForm="add" />
+  
   </section>
     `,
 
   data() {
     return {
-      assignments: [
-        { name: "Finish project", complete: false, id: 1, tag: 'math' },
-        { name: "Read chapter 4 ", complete: false, id: 2, tag: 'science' },
-        { name: "Turn in homework", complete: false, id: 3, tag: 'math' },
-      ],
-      newAssignment: ''
+      assignments: [],
+      newAssignment: "",
+      showCompleted: true,
     };
   },
 
   components: {
-    AssignmentList, AssignmentCreate
+    AssignmentList,
+    AssignmentCreate,
   },
 
   computed: {
@@ -35,15 +38,23 @@ export default {
     },
   },
 
+  created() {
+    fetch("http://localhost:3001/assignments")
+      .then((response) => response.json())
+      .then((data) => {
+        this.assignments = data;
+      });
+  },
+
   methods: {
     add(name) {
       this.assignments.push({
         name: name,
         completed: false,
-        id: this.assignments.length + 1
+        id: this.assignments.length + 1,
       });
 
-      this.newAssignment = ''
-    }
-  }
+      this.newAssignment = "";
+    },
+  },
 };
